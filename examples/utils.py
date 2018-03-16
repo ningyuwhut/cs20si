@@ -6,7 +6,8 @@ import urllib
 
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 

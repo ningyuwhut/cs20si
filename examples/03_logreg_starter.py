@@ -1,3 +1,4 @@
+#encoding=utf-8
 """ Starter code for simple logistic regression model for MNIST
 with tf.data module
 MNIST dataset: yann.lecun.com/exdb/mnist/
@@ -37,9 +38,13 @@ train_data = train_data.batch(batch_size)
 test_data = None
 #############################
 ########## TO DO ############
+test_data = tf.data.Dataset.from_tensor_slices(test)
+test_data = test_data.shuffle(10000)
+test_data = test_data.batch(batch_size)
 #############################
 
 
+print("output_shapes", train_data.output_shapes)
 # create one iterator and initialize it with different datasets
 iterator = tf.data.Iterator.from_structure(train_data.output_types, 
                                            train_data.output_shapes)
@@ -56,6 +61,10 @@ test_init = iterator.make_initializer(test_data)	# initializer for train_data
 w, b = None, None
 #############################
 ########## TO DO ############
+print(img.get_shape().as_list()[1] )
+w = tf.get_variable(name='w', shape=[img.get_shape().as_list()[1], label.get_shape().as_list()[1] ], initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01 ))
+#w = tf.get_variable('w', tf.random_normal( mean=0.0, stddev=0.01, shape=[img.get_shape().as_list()[1], label.get_shape().as_list()[0] ]) )
+b= tf.get_variable('b', initializer=tf.zeros_initializer(), shape=[label.get_shape().as_list()[1]] )
 #############################
 
 
@@ -65,14 +74,21 @@ w, b = None, None
 logits = None
 #############################
 ########## TO DO ############
-#############################
 
+#这里不能用img*w
+logits = tf.matmul(img,w) + b 
+#注意logits的含义，因为是喂给tf.nn.softmax_cross_entropy_with_logits的，所以不能计算softmax
+print(logits.get_shape())
+#############################
 
 # Step 5: define loss function
 # use cross entropy of softmax of logits as the loss function
 loss = None
 #############################
 ########## TO DO ############
+loss = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=label )
+#tf.nn.softmax_cross_entropy_with_logits 返回的是一个长度为batch_size的tensor
+loss=tf.reduce_mean(loss)
 #############################
 
 
@@ -81,6 +97,8 @@ loss = None
 optimizer = None
 #############################
 ########## TO DO ############
+
+optimizer= tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 #############################
 
 
@@ -96,7 +114,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
     # train the model n_epochs times
-    for i in range(n_epochs): 	
+    for i in range(n_epochs): 
         sess.run(train_init)	# drawing samples from train_data
         total_loss = 0
         n_batches = 0
